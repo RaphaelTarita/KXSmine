@@ -40,20 +40,7 @@ Although being quite similar, the format is not the same as, nor in any way inte
 
 ```
 root: {
-    listItems: [
-        1,
-        1,
-        2,
-        3,
-        5,
-        8,
-        13,
-        21,
-        34,
-        55,
-        89,
-        144
-    ],
+    listItems: [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144],
     oneByte: 42b,
     someString: "Hello, World!",
     oneInteger: 99999999,
@@ -61,27 +48,15 @@ root: {
         {
             entry0x0:SomeData,
             entry0x1:9223372036854775807l,
-            entry0x2:[B;1,2,3,4,5,6,7]
+            entry0x2:[B; 1, 2, 3, 4, 5, 6, 7]
         },
         {
-            entry1x0: [L;
-                9223372036854775807,
-                9223372036854775806
-            ],
+            entry1x0: [L; 9223372036854775807, 9223372036854775806],
             entry1x1: 3.1415d,
             entry1x2: 2.718f
         },
         {
-            entry2x0: [I;
-                1,
-                2,
-                4,
-                8,
-                16,
-                32,
-                64,
-                128
-            ],
+            entry2x0: [I; 1, 2, 4, 8, 16, 32, 64, 128],
             entry2x1: 2s,
             entry2x2: "End of test"
         }

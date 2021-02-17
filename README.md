@@ -112,7 +112,7 @@ Moreover, KXS is also "multi-format", meaning it provides a standard API for ser
 
 formats are supported in the official framework, with many more community-maintained formats (yaml, xml,...) being out there. With KXSmine, it's yet another format for the growing family!
 
-# WIP
+# WIP Notice
 This project is currently Work In Progress. To be precise, it is at the very beginning of development. The current sourcecode only contains fractions of the final state of the library.
 Any content of this repository, including documentation and this very file, can be subject to drastic changes until this project reaches somewhat of an "alpha phase".
 Documentation will subsequently be added to this file and the [Wiki](https://github.com/RaphaelTarita/KXSmine/wiki "KXSmine Wiki").

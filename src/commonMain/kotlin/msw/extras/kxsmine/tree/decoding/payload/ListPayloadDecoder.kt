@@ -9,7 +9,7 @@ import msw.extras.kxsmine.tree.TagType
 import msw.extras.kxsmine.tree.node.payload.PayloadNode
 
 public object ListPayloadDecoder : PayloadDecoder<List<PayloadNode<*>>>() {
-    override val regexSignature: Regex = "\\[.*(?:,\\s.*)*]".toRegex()
+    override val regexSignature: Regex = "\\[(?:.|\\s)*(?:,(?:.|\\s)*)]".toRegex()
 
     override fun decode(bytes: ByteArray, offset: Int): OffsetResult<List<PayloadNode<*>>> {
         val overallType = TagType.fromID(bytes[offset])

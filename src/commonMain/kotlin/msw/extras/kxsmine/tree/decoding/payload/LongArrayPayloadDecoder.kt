@@ -4,7 +4,7 @@ import msw.extras.kxsmine.chunked
 import msw.extras.kxsmine.tree.OffsetResult
 
 public object LongArrayPayloadDecoder : PayloadDecoder<LongArray>() {
-    override val regexSignature: Regex = "\\[L;\\s*[+\\-]?[0-9]+(?:,\\s*[+\\-]?[0-9]+)*]".toRegex()
+    override val regexSignature: Regex = "\\[L;\\s*[+\\-]?[0-9]+(?:,\\s*[+\\-]?[0-9]+)*\\s*]".toRegex()
     private val splitRegex = ",\\s*".toRegex()
 
     override fun decode(bytes: ByteArray, offset: Int): OffsetResult<LongArray> {

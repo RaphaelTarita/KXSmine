@@ -9,7 +9,7 @@ import msw.extras.kxsmine.tree.node.tag.TagNode
 
 public sealed class TagDecoder<T> {
     internal companion object {
-        internal val snbtRegex = "([a-zA-Z0-9\\s]+):(.*)".toRegex()
+        internal val snbtRegex = "([a-zA-Z0-9\\s]+):\\s*((?:.|\\s)*)".toRegex()
     }
 
     public abstract val type: TagType

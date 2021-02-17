@@ -164,7 +164,7 @@ private fun matching(symbol: Char): Char = when (symbol) {
 internal fun String.indexOfMatching(symbol: Char, offset: Int = 0, matching: Char = matching(symbol)): Pair<Int, Int> {
     val stack = mutableListOf<Unit>()
     var first = -1
-    for (i in offset..this.length) {
+    for (i in offset..this.lastIndex) {
         if (get(i) == symbol) {
             if (first == -1) first = i
             stack.add(Unit)
@@ -267,7 +267,7 @@ internal fun payloadNodeSupplierFor(type: TagType): (Any?) -> PayloadNode<*> {
 
 internal fun guessTagTypeFor(value: String, extractValue: Boolean = false): TagType {
     val prepared = if (extractValue) {
-        TagDecoder.snbtRegex.matchEntire(value)?.groupValues?.get(2) ?: throw SNBTDecodingException(
+        TagDecoder.snbtRegex.matchEntire(value)?.groupValues?.get(2)?.trim() ?: throw SNBTDecodingException(
             "Cannot guess type of element: ${value.truncate(50)}"
         )
     } else value
@@ -286,7 +286,7 @@ internal fun guessTagTypeFor(value: String, extractValue: Boolean = false): TagT
         prepared.matches(ListPayloadDecoder.regexSignature) -> TagType.LIST
         prepared.matches(StringPayloadDecoder.regexSignature) -> TagType.STRING
         else -> throw SNBTDecodingException(
-            "Cannot guess type of element: ${value.truncate(50)}"
+            "Cannot guess type of element: ${prepared.truncate(50)}"
         )
     }
 }

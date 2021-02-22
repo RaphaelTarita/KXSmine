@@ -1,5 +1,19 @@
 package msw.extras.kxsmine.tree
 
+import msw.extras.kxsmine.dsl.build.elem.ByteArrays
+import msw.extras.kxsmine.dsl.build.elem.Bytes
+import msw.extras.kxsmine.dsl.build.elem.Compounds
+import msw.extras.kxsmine.dsl.build.elem.Doubles
+import msw.extras.kxsmine.dsl.build.elem.ElementType
+import msw.extras.kxsmine.dsl.build.elem.Ends
+import msw.extras.kxsmine.dsl.build.elem.Floats
+import msw.extras.kxsmine.dsl.build.elem.IntArrays
+import msw.extras.kxsmine.dsl.build.elem.Ints
+import msw.extras.kxsmine.dsl.build.elem.Lists
+import msw.extras.kxsmine.dsl.build.elem.LongArrays
+import msw.extras.kxsmine.dsl.build.elem.Longs
+import msw.extras.kxsmine.dsl.build.elem.Shorts
+import msw.extras.kxsmine.dsl.build.elem.Strings
 import msw.extras.kxsmine.tree.decoding.tag.ByteArrayTagDecoder
 import msw.extras.kxsmine.tree.decoding.tag.ByteTagDecoder
 import msw.extras.kxsmine.tree.decoding.tag.CompoundTagDecoder
@@ -81,6 +95,23 @@ public enum class TagType(
             COMPOUND -> CompoundTagDecoder
             INTARRAY -> IntArrayTagDecoder
             LONGARRAY -> LongArrayTagDecoder
+        }
+
+    public val elementType: ElementType<*>
+        get() = when (this) {
+            END -> Ends
+            BYTE -> Bytes
+            SHORT -> Shorts
+            INT -> Ints
+            LONG -> Longs
+            FLOAT -> Floats
+            DOUBLE -> Doubles
+            BYTEARRAY -> ByteArrays
+            STRING -> Strings
+            LIST -> Lists
+            COMPOUND -> Compounds
+            INTARRAY -> IntArrays
+            LONGARRAY -> LongArrays
         }
 
     public override fun toString(): String {

@@ -9,6 +9,7 @@ import msw.extras.kxsmine.tree.node.payload.FloatPayloadNode
 import msw.extras.kxsmine.tree.node.payload.IntArrayPayloadNode
 import msw.extras.kxsmine.tree.node.payload.IntPayloadNode
 import msw.extras.kxsmine.tree.node.payload.ListPayloadNode
+import msw.extras.kxsmine.tree.node.payload.ListPayloadNode.Companion.listPayloadNode
 import msw.extras.kxsmine.tree.node.payload.LongArrayPayloadNode
 import msw.extras.kxsmine.tree.node.payload.LongPayloadNode
 import msw.extras.kxsmine.tree.node.payload.PayloadNode
@@ -16,10 +17,15 @@ import msw.extras.kxsmine.tree.node.payload.ShortPayloadNode
 import msw.extras.kxsmine.tree.node.payload.StringPayloadNode
 import msw.extras.kxsmine.tree.node.tag.TagNode
 
-public class NBTPayloadContext : Collector<PayloadNode<*>> {
+@NBTMarker
+public class NBTPayloadContext : Collector<PayloadNode<*>>, CompoundCollector {
     private val drain = mutableListOf<PayloadNode<*>>()
 
-    private fun <T, P : PayloadNode<T>> addInternal(data: P): P {
+    @PublishedApi
+    internal val listCollector: ListCollector = ListCollector(drain)
+
+    @PublishedApi
+    internal fun <T, P : PayloadNode<T>> addInternal(data: P): P {
         drain.add(data)
         return data
     }
@@ -49,12 +55,14 @@ public class NBTPayloadContext : Collector<PayloadNode<*>> {
     public fun string(vararg data: Char): StringPayloadNode = addInternal(RootCreator.string(*data))
     public fun string(data: StringBuilder): StringPayloadNode = addInternal(RootCreator.string(data))
     public fun string(builder: Collector<Char>.() -> Unit): StringPayloadNode = addInternal(RootCreator.string(builder))
-    public fun <T> list(data: List<PayloadNode<T>>): ListPayloadNode = addInternal(RootCreator.list(data))
-    public fun <T> list(vararg data: PayloadNode<T>): ListPayloadNode = addInternal(RootCreator.list(*data))
-    public fun list(builder: NBTPayloadContext.() -> Unit): ListPayloadNode = addInternal(RootCreator.list(builder))
-    public fun compound(data: Collection<TagNode<*>>): CompoundPayloadNode = addInternal(RootCreator.compound(data))
-    public fun compound(vararg data: TagNode<*>): CompoundPayloadNode = addInternal(RootCreator.compound(*data))
-    public fun compound(builder: NBTContext.() -> Unit): CompoundPayloadNode = addInternal(RootCreator.compound(builder))
+    public inline fun <reified T> list(data: List<T>): ListPayloadNode = listCollector.list(data)
+    public inline fun <reified T> list(vararg data: T): ListPayloadNode = listCollector.list(*data)
+    public inline fun <reified T> list(builder: Collector<T>.() -> Unit): ListPayloadNode = listCollector.list(builder)
+    public fun listlist(builder: ListCollector.() -> Unit): ListPayloadNode = listCollector.listlist(builder)
+    public fun compoundlist(builder: CompoundCollector.() -> Unit): ListPayloadNode = listCollector.compoundlist(builder)
+    public override fun compound(data: Collection<TagNode<*>>): CompoundPayloadNode = addInternal(RootCreator.compound(data))
+    public override fun compound(vararg data: TagNode<*>): CompoundPayloadNode = addInternal(RootCreator.compound(*data))
+    public override fun compound(builder: NBTContext.() -> Unit): CompoundPayloadNode = addInternal(RootCreator.compound(builder))
 
     override fun extract(): List<PayloadNode<*>> = drain
 
@@ -100,12 +108,28 @@ public class NBTPayloadContext : Collector<PayloadNode<*>> {
             return StringPayloadNode(collector.extract().joinToString(""))
         }
 
-        public fun <T> list(data: List<PayloadNode<T>>): ListPayloadNode = ListPayloadNode(data)
-        public fun <T> list(vararg data: PayloadNode<T>): ListPayloadNode = ListPayloadNode(data.toList())
-        public fun list(builder: NBTPayloadContext.() -> Unit): ListPayloadNode {
-            val collector = NBTPayloadContext()
+        public inline fun <reified T> list(data: List<T>): ListPayloadNode = listPayloadNode(data)
+        public inline fun <reified T> list(vararg data: T): ListPayloadNode = listPayloadNode(data.toList())
+        public inline fun <reified T> list(builder: Collector<T>.() -> Unit): ListPayloadNode {
+            val collector = SimpleCollector<T>()
+            collector.builder()
+            return listPayloadNode(collector.extract())
+        }
+
+        public fun listlist(builder: ListCollector.() -> Unit): ListPayloadNode {
+            val collector = ListCollector()
             collector.builder()
             return ListPayloadNode(collector.extract())
+        }
+
+        public fun compoundlist(builder: CompoundCollector.() -> Unit): ListPayloadNode {
+            val collector = NBTPayloadContext()
+            collector.builder()
+            return ListPayloadNode(collector.extract().onEach {
+                if (it !is CompoundPayloadNode) {
+                    throw IllegalArgumentException("Tried to pass non-compound element '$it' to compound list builder")
+                }
+            })
         }
 
         public fun compound(data: Collection<TagNode<*>>): CompoundPayloadNode = CompoundPayloadNode(data)

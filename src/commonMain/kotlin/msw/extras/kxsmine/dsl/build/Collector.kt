@@ -1,5 +1,6 @@
 package msw.extras.kxsmine.dsl.build
 
+@NBTMarker
 public interface Collector<T> {
     public fun extract(): List<T>
     public fun add(data: T): T

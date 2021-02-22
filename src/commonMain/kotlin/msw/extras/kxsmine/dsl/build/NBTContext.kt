@@ -1,6 +1,6 @@
 package msw.extras.kxsmine.dsl.build
 
-import msw.extras.kxsmine.tree.node.payload.PayloadNode
+import msw.extras.kxsmine.tree.node.payload.CompoundPayloadNode
 import msw.extras.kxsmine.tree.node.tag.ByteArrayTagNode
 import msw.extras.kxsmine.tree.node.tag.ByteTagNode
 import msw.extras.kxsmine.tree.node.tag.CompoundTagNode
@@ -10,16 +10,19 @@ import msw.extras.kxsmine.tree.node.tag.FloatTagNode
 import msw.extras.kxsmine.tree.node.tag.IntArrayTagNode
 import msw.extras.kxsmine.tree.node.tag.IntTagNode
 import msw.extras.kxsmine.tree.node.tag.ListTagNode
+import msw.extras.kxsmine.tree.node.tag.ListTagNode.Companion.listTagNode
 import msw.extras.kxsmine.tree.node.tag.LongArrayTagNode
 import msw.extras.kxsmine.tree.node.tag.LongTagNode
 import msw.extras.kxsmine.tree.node.tag.ShortTagNode
 import msw.extras.kxsmine.tree.node.tag.StringTagNode
 import msw.extras.kxsmine.tree.node.tag.TagNode
 
+@NBTMarker
 public class NBTContext : Collector<TagNode<*>> {
     private val drain: MutableList<TagNode<*>> = mutableListOf()
 
-    private fun <T, N : TagNode<T>> addInternal(data: N): N {
+    @PublishedApi
+    internal fun <T, N : TagNode<T>> addInternal(data: N): N {
         drain.add(data)
         return data
     }
@@ -49,9 +52,11 @@ public class NBTContext : Collector<TagNode<*>> {
     public fun string(name: String, vararg data: Char): StringTagNode = addInternal(RootCreator.string(name, *data))
     public fun string(name: String, data: StringBuilder): StringTagNode = addInternal(RootCreator.string(name, data))
     public fun string(name: String, builder: Collector<Char>.() -> Unit): StringTagNode = addInternal(RootCreator.string(name, builder))
-    public fun <T> list(name: String, data: List<PayloadNode<T>>): ListTagNode = addInternal(RootCreator.list(name, data))
-    public fun <T> list(name: String, vararg data: PayloadNode<T>): ListTagNode = addInternal(RootCreator.list(name, *data))
-    public fun list(name: String, builder: NBTPayloadContext.() -> Unit): ListTagNode = addInternal(RootCreator.list(name, builder))
+    public inline fun <reified T> list(name: String, data: List<T>): ListTagNode = addInternal(RootCreator.list(name, data))
+    public inline fun <reified T> list(name: String, vararg data: T): ListTagNode = addInternal(RootCreator.list(name, *data))
+    public inline fun <reified T> list(name: String, builder: Collector<T>.() -> Unit): ListTagNode = addInternal(RootCreator.list(name, builder))
+    public fun listlist(name: String, builder: ListCollector.() -> Unit): ListTagNode = addInternal(RootCreator.listlist(name, builder))
+    public fun compoundlist(name: String, builder: CompoundCollector.() -> Unit): ListTagNode = addInternal(RootCreator.compoundlist(name, builder))
     public fun compound(name: String, data: Collection<TagNode<*>>): CompoundTagNode = addInternal(RootCreator.compound(name, data))
     public fun compound(name: String, vararg data: TagNode<*>): CompoundTagNode = addInternal(RootCreator.compound(name, *data))
     public fun compound(name: String, builder: NBTContext.() -> Unit): CompoundTagNode = addInternal(RootCreator.compound(name, builder))
@@ -100,12 +105,28 @@ public class NBTContext : Collector<TagNode<*>> {
             return StringTagNode(name, collector.extract().joinToString(""))
         }
 
-        public fun <T> list(name: String, data: List<PayloadNode<T>>): ListTagNode = ListTagNode(name, data)
-        public fun <T> list(name: String, vararg data: PayloadNode<T>): ListTagNode = ListTagNode(name, data.toList())
-        public fun list(name: String, builder: NBTPayloadContext.() -> Unit): ListTagNode {
-            val collector = NBTPayloadContext()
+        public inline fun <reified T> list(name: String, data: List<T>): ListTagNode = listTagNode(name, data)
+        public inline fun <reified T> list(name: String, vararg data: T): ListTagNode = listTagNode(name, data.toList())
+        public inline fun <reified T> list(name: String, builder: Collector<T>.() -> Unit): ListTagNode {
+            val collector = SimpleCollector<T>()
+            collector.builder()
+            return listTagNode(name, collector.extract())
+        }
+
+        public fun listlist(name: String, builder: ListCollector.() -> Unit): ListTagNode {
+            val collector = ListCollector()
             collector.builder()
             return ListTagNode(name, collector.extract())
+        }
+
+        public fun compoundlist(name: String, builder: CompoundCollector.() -> Unit): ListTagNode {
+            val collector = NBTPayloadContext()
+            collector.builder()
+            return ListTagNode(name, collector.extract().onEach {
+                if (it !is CompoundPayloadNode) {
+                    throw IllegalArgumentException("Tried to pass non-compound element '$it' to compound list builder")
+                }
+            })
         }
 
         public fun compound(name: String, data: Collection<TagNode<*>>): CompoundTagNode = CompoundTagNode(name, data)

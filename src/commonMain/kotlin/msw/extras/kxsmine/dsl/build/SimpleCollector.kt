@@ -1,5 +1,6 @@
 package msw.extras.kxsmine.dsl.build
 
+@PublishedApi
 internal class SimpleCollector<T> : Collector<T> {
     private val drain = mutableListOf<T>()
     override fun extract(): List<T> = drain

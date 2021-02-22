@@ -16,20 +16,8 @@ import msw.extras.kxsmine.tree.decoding.payload.LongPayloadDecoder
 import msw.extras.kxsmine.tree.decoding.payload.ShortPayloadDecoder
 import msw.extras.kxsmine.tree.decoding.payload.StringPayloadDecoder
 import msw.extras.kxsmine.tree.decoding.tag.TagDecoder
-import msw.extras.kxsmine.tree.node.payload.ByteArrayPayloadNode
-import msw.extras.kxsmine.tree.node.payload.BytePayloadNode
-import msw.extras.kxsmine.tree.node.payload.CompoundPayloadNode
-import msw.extras.kxsmine.tree.node.payload.DoublePayloadNode
-import msw.extras.kxsmine.tree.node.payload.EndPayloadNode
-import msw.extras.kxsmine.tree.node.payload.FloatPayloadNode
-import msw.extras.kxsmine.tree.node.payload.IntArrayPayloadNode
-import msw.extras.kxsmine.tree.node.payload.IntPayloadNode
-import msw.extras.kxsmine.tree.node.payload.ListPayloadNode
-import msw.extras.kxsmine.tree.node.payload.LongArrayPayloadNode
-import msw.extras.kxsmine.tree.node.payload.LongPayloadNode
 import msw.extras.kxsmine.tree.node.payload.PayloadNode
-import msw.extras.kxsmine.tree.node.payload.ShortPayloadNode
-import msw.extras.kxsmine.tree.node.payload.StringPayloadNode
+import kotlin.reflect.KClass
 
 internal val HEX = charArrayOf('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f')
 
@@ -212,7 +200,7 @@ internal fun String.splitTopLevel(startIndex: Int = 0, endIndex: Int = lastIndex
     return result
 }
 
-private inline fun <reified N> Any?.castTo(): N {
+internal inline fun <reified N> Any?.castTo(): N {
     if (this == null) throw NBTDecodingException("Decoding returned null")
     return try {
         this as N
@@ -221,49 +209,7 @@ private inline fun <reified N> Any?.castTo(): N {
     }
 }
 
-internal fun payloadNodeSupplierFor(type: TagType): (Any?) -> PayloadNode<*> {
-    return when (type) {
-        TagType.END -> {
-            { EndPayloadNode }
-        }
-        TagType.BYTE -> {
-            { BytePayloadNode(it.castTo()) }
-        }
-        TagType.SHORT -> {
-            { ShortPayloadNode(it.castTo()) }
-        }
-        TagType.INT -> {
-            { IntPayloadNode(it.castTo()) }
-        }
-        TagType.LONG -> {
-            { LongPayloadNode(it.castTo()) }
-        }
-        TagType.FLOAT -> {
-            { FloatPayloadNode(it.castTo()) }
-        }
-        TagType.DOUBLE -> {
-            { DoublePayloadNode(it.castTo()) }
-        }
-        TagType.BYTEARRAY -> {
-            { ByteArrayPayloadNode(it.castTo()) }
-        }
-        TagType.STRING -> {
-            { StringPayloadNode(it.castTo()) }
-        }
-        TagType.LIST -> {
-            { ListPayloadNode(it.castTo()) }
-        }
-        TagType.COMPOUND -> {
-            { CompoundPayloadNode(it.castTo()) }
-        }
-        TagType.INTARRAY -> {
-            { IntArrayPayloadNode(it.castTo()) }
-        }
-        TagType.LONGARRAY -> {
-            { LongArrayPayloadNode(it.castTo()) }
-        }
-    }
-}
+internal fun payloadNodeSupplierFor(type: TagType): (Any?) -> PayloadNode<*> = type.elementType.ctorGeneric
 
 internal fun guessTagTypeFor(value: String, extractValue: Boolean = false): TagType {
     val prepared = if (extractValue) {
@@ -296,3 +242,24 @@ internal fun guessTagTypeFor(values: Iterable<String>, extractValues: Boolean = 
         "Cannot guess list type of elements: ${values.joinToString(", ", limit = 50)}"
     )
 }
+
+@PublishedApi
+internal fun guessTagTypeFor(clazz: KClass<*>): TagType = when (clazz) {
+    Unit::class -> TagType.END
+    Byte::class -> TagType.BYTE
+    Short::class -> TagType.SHORT
+    Int::class -> TagType.INT
+    Long::class -> TagType.LONG
+    Float::class -> TagType.FLOAT
+    Double::class -> TagType.DOUBLE
+    ByteArray::class -> TagType.BYTEARRAY
+    String::class -> TagType.STRING
+    List::class -> TagType.LIST
+    Collection::class -> TagType.COMPOUND
+    IntArray::class -> TagType.INTARRAY
+    LongArray::class -> TagType.LONGARRAY
+    else -> throw IllegalArgumentException("Cannot guess tag type for type '$clazz'")
+}
+
+@PublishedApi
+internal inline fun <reified T> guessTagTypeFor(): TagType = guessTagTypeFor(T::class)

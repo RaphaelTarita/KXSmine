@@ -16,5 +16,6 @@ public class CompoundTagNode(
     override val payload: PayloadNode<Collection<TagNode<*>>> = CompoundPayloadNode(data)
     override val encoder: TagEncoder<Collection<TagNode<*>>> = CompoundTagEncoder
     override val decoder: TagDecoder<Collection<TagNode<*>>> = CompoundTagDecoder
-    internal val accessMap: Map<String, TagNode<*>> = payload.data.associateBy { it.name }
+    internal val accessMap: Map<String, TagNode<*>>
+        get() = (payload as CompoundPayloadNode).accessMap
 }

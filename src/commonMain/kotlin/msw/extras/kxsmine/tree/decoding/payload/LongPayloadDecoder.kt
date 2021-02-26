@@ -1,7 +1,7 @@
 package msw.extras.kxsmine.tree.decoding.payload
 
 import msw.extras.kxsmine.tree.OffsetResult
-import msw.extras.kxsmine.tree.SNBTDecodingException
+import msw.extras.kxsmine.exc.SNBTDecodingException
 import msw.extras.kxsmine.tree.TagType
 
 public object LongPayloadDecoder : PayloadDecoder<Long>() {

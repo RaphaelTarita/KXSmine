@@ -1,6 +1,6 @@
 package msw.extras.kxsmine.tree.decoding.tag
 
-import msw.extras.kxsmine.tree.NBTDecodingException
+import msw.extras.kxsmine.exc.NBTDecodingException
 import msw.extras.kxsmine.tree.OffsetResult
 import msw.extras.kxsmine.tree.TagType
 import msw.extras.kxsmine.tree.decoding.payload.EndPayloadDecoder

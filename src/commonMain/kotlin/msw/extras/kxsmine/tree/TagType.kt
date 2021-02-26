@@ -14,6 +14,7 @@ import msw.extras.kxsmine.dsl.build.elem.LongArrays
 import msw.extras.kxsmine.dsl.build.elem.Longs
 import msw.extras.kxsmine.dsl.build.elem.Shorts
 import msw.extras.kxsmine.dsl.build.elem.Strings
+import msw.extras.kxsmine.exc.NBTDecodingException
 import msw.extras.kxsmine.tree.decoding.tag.ByteArrayTagDecoder
 import msw.extras.kxsmine.tree.decoding.tag.ByteTagDecoder
 import msw.extras.kxsmine.tree.decoding.tag.CompoundTagDecoder

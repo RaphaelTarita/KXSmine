@@ -1,8 +1,9 @@
-package msw.extras.kxsmine.tree
+package msw.extras.kxsmine.exc
 
+import msw.extras.kxsmine.tree.TagType
 import msw.extras.kxsmine.truncate
 
-public class SNBTDecodingException : Exception {
+public class SNBTDecodingException : NBTSerializationException {
     public constructor() : super()
     public constructor(message: String?) : super(message)
     public constructor(message: String?, cause: Throwable?) : super(message, cause)

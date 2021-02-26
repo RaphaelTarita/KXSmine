@@ -6,6 +6,7 @@ import msw.extras.kxsmine.payloadNodeSupplierFor
 import msw.extras.kxsmine.splitTopLevel
 import msw.extras.kxsmine.tree.OffsetResult
 import msw.extras.kxsmine.tree.TagType
+import msw.extras.kxsmine.tree.node.payload.EndPayloadNode
 import msw.extras.kxsmine.tree.node.payload.PayloadNode
 
 public object ListPayloadDecoder : PayloadDecoder<List<PayloadNode<*>>>() {
@@ -13,9 +14,10 @@ public object ListPayloadDecoder : PayloadDecoder<List<PayloadNode<*>>>() {
 
     override fun decode(bytes: ByteArray, offset: Int): OffsetResult<List<PayloadNode<*>>> {
         val overallType = TagType.fromID(bytes[offset])
+        val (length, startOffset) = IntPayloadDecoder.decode(bytes, offset + 1)
+        if (overallType == TagType.END) return OffsetResult(List(length) { EndPayloadNode }, offset)
         val innerDecoder = overallType.decoder.payloadDecoder
         val nodeSupplier = payloadNodeSupplierFor(overallType)
-        val (length, startOffset) = IntPayloadDecoder.decode(bytes, offset + 1)
         val result = ArrayList<PayloadNode<*>>((length / overallType.heuristicSize).coerceAtLeast(1))
 
         var count = 0

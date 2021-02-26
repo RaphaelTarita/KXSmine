@@ -1,7 +1,7 @@
 package msw.extras.kxsmine
 
-import msw.extras.kxsmine.tree.NBTDecodingException
-import msw.extras.kxsmine.tree.SNBTDecodingException
+import msw.extras.kxsmine.exc.NBTDecodingException
+import msw.extras.kxsmine.exc.SNBTDecodingException
 import msw.extras.kxsmine.tree.TagType
 import msw.extras.kxsmine.tree.decoding.payload.ByteArrayPayloadDecoder
 import msw.extras.kxsmine.tree.decoding.payload.BytePayloadDecoder

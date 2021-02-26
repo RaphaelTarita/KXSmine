@@ -1,8 +1,9 @@
-package msw.extras.kxsmine.tree
+package msw.extras.kxsmine.exc
 
 import msw.extras.kxsmine.toHexString
+import msw.extras.kxsmine.tree.TagType
 
-public class NBTDecodingException : Exception {
+public class NBTDecodingException : NBTSerializationException {
     public constructor() : super()
     public constructor(message: String?) : super(message)
     public constructor(message: String?, cause: Throwable?) : super(message, cause)

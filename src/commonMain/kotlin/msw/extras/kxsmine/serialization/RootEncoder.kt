@@ -2,7 +2,6 @@ package msw.extras.kxsmine.serialization
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encoding.AbstractEncoder
 import kotlinx.serialization.encoding.CompositeEncoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.modules.EmptySerializersModule
@@ -12,26 +11,20 @@ import msw.extras.kxsmine.tree.node.payload.DoublePayloadNode
 import msw.extras.kxsmine.tree.node.payload.EndPayloadNode
 import msw.extras.kxsmine.tree.node.payload.FloatPayloadNode
 import msw.extras.kxsmine.tree.node.payload.IntPayloadNode
-import msw.extras.kxsmine.tree.node.payload.ListPayloadNode
 import msw.extras.kxsmine.tree.node.payload.LongPayloadNode
 import msw.extras.kxsmine.tree.node.payload.PayloadNode
 import msw.extras.kxsmine.tree.node.payload.ShortPayloadNode
 import msw.extras.kxsmine.tree.node.payload.StringPayloadNode
-import msw.extras.kxsmine.tree.node.tag.ListTagNode
 
 @ExperimentalSerializationApi
-public class ListEncoder(
-    override val notifySuper: (NBTEncoder) -> Unit = {},
-    private val rootName: String = "",
-    override val serializersModule: SerializersModule = EmptySerializersModule,
-    collectionSize: Int = -1
-) : NBTEncoder, AbstractEncoder() {
-    override val collector: MutableList<PayloadNode<*>> = ArrayList(collectionSize.coerceAtLeast(0))
-
+public class RootEncoder(
+    override val serializersModule: SerializersModule = EmptySerializersModule
+) : Encoder {
+    private var result: PayloadNode<*>? = null
     override fun beginStructure(descriptor: SerialDescriptor): CompositeEncoder {
         return provideImpl(
             descriptor,
-            { collector.add(it.extractRootPayload()) },
+            { result = it.extractRootPayload() },
             "",
             serializersModule
         )
@@ -40,73 +33,73 @@ public class ListEncoder(
     override fun beginCollection(descriptor: SerialDescriptor, collectionSize: Int): CompositeEncoder {
         return provideListImpl(
             descriptor,
-            { collector.add(it.extractRootPayload()) },
+            { result = it.extractRootPayload() },
             "",
             serializersModule,
             collectionSize
         )
     }
 
-    override fun endStructure(descriptor: SerialDescriptor) {
-        notifySuper(this)
-    }
-
     override fun encodeInline(inlineDescriptor: SerialDescriptor): Encoder {
-        return PrimitiveEncoder({ collector.add(it.extractRootPayload()) }, "", serializersModule)
+        return PrimitiveEncoder(
+            { result = it.extractRootPayload() },
+            "",
+            serializersModule
+        )
     }
 
     override fun encodeByte(value: Byte) {
-        collector.add(BytePayloadNode(value))
+        result = BytePayloadNode(value)
     }
 
     override fun encodeBoolean(value: Boolean) {
         // TODO: Control encoding details (byte / string) with config
-        collector.add(BytePayloadNode(if (value) 1 else 0))
+        result = BytePayloadNode(if (value) 1 else 0)
     }
 
     override fun encodeShort(value: Short) {
-        collector.add(ShortPayloadNode(value))
+        result = ShortPayloadNode(value)
     }
 
     override fun encodeInt(value: Int) {
-        collector.add(IntPayloadNode(value))
+        result = IntPayloadNode(value)
     }
 
     override fun encodeLong(value: Long) {
-        collector.add(LongPayloadNode(value))
+        result = LongPayloadNode(value)
     }
 
     override fun encodeFloat(value: Float) {
-        collector.add(FloatPayloadNode(value))
+        result = FloatPayloadNode(value)
     }
 
     override fun encodeDouble(value: Double) {
-        collector.add(DoublePayloadNode(value))
+        result = DoublePayloadNode(value)
     }
 
     override fun encodeString(value: String) {
-        collector.add(StringPayloadNode(value))
+        result = StringPayloadNode(value)
     }
 
     override fun encodeChar(value: Char) {
         // TODO: Control encoding details (byte / string) with config
-        collector.add(StringPayloadNode(value.toString()))
+        result = StringPayloadNode(value.toString())
     }
 
     override fun encodeEnum(enumDescriptor: SerialDescriptor, index: Int) {
         // TODO: Control encoding details (byte / short / int / long / dynamic / string) with config
-        collector.add(BytePayloadNode(index.toByte()))
+        result = BytePayloadNode(index.toByte())
     }
 
     override fun encodeNull() {
-        collector.add(EndPayloadNode)
+        result = EndPayloadNode
     }
 
-    override fun extractRootTag(): ListTagNode {
-        return ListTagNode(rootName, collector)
+    public fun getNBT(): ByteArray {
+        return result?.encode() ?: byteArrayOf()
     }
 
-    override fun extractRootPayload(): ListPayloadNode {
-        return ListPayloadNode(collector)
+    public fun getSNBT(): String {
+        return result?.encodeSNBT() ?: ""
     }
 }

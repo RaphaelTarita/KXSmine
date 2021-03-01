@@ -211,4 +211,12 @@ internal class SingleElementList<E> : MutableList<E> {
             else -> throw IndexOutOfBoundsException("indices '$fromIndex, $toIndex' out of bounds for size '$size'")
         }
     }
+
+    internal fun element(): E {
+        return elem ?: throw IllegalStateException("SingleElementList was empty")
+    }
+
+    internal fun elementOrNull(): E? {
+        return elem
+    }
 }

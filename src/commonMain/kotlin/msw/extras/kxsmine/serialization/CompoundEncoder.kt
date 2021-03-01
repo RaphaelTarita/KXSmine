@@ -4,6 +4,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.AbstractEncoder
 import kotlinx.serialization.encoding.CompositeEncoder
+import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 import msw.extras.kxsmine.tree.node.payload.CompoundPayloadNode
@@ -36,8 +37,26 @@ public class CompoundEncoder(
         )
     }
 
+    override fun beginCollection(descriptor: SerialDescriptor, collectionSize: Int): CompositeEncoder {
+        return provideListImpl(
+            descriptor,
+            { collector.add(it.extractRootTag()) },
+            nextName.consume(),
+            serializersModule,
+            collectionSize
+        )
+    }
+
     override fun endStructure(descriptor: SerialDescriptor) {
         notifySuper(this)
+    }
+
+    override fun encodeInline(inlineDescriptor: SerialDescriptor): Encoder {
+        return PrimitiveEncoder(
+            { collector.add(it.extractRootTag()) },
+            nextName.consume(),
+            serializersModule
+        )
     }
 
     override fun encodeByte(value: Byte) {

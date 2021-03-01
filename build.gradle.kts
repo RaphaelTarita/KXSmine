@@ -1,5 +1,6 @@
 plugins {
     kotlin("multiplatform") version "1.4.30"
+    kotlin("plugin.serialization") version "1.4.30"
 }
 
 group = "msw.extras"
@@ -39,7 +40,7 @@ kotlin {
         else -> throw GradleException("Host OS is not supported in Kotlin/Native.")
     }
 
-    
+
     sourceSets {
         val commonMain by getting {
             dependencies {
@@ -73,7 +74,7 @@ kotlin {
     sourceSets.all {
         languageSettings.apply {
             languageVersion = "1.5"
-            useExperimentalAnnotation("kotlin.ExperimentalUnsignedTypes")
+            useExperimentalAnnotation("kotlin.RequiresOptIn")
         }
     }
 }
